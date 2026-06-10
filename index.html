@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recetario Rosarino | Recetas Sencillas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Animación suave para la aparición del panel de la receta */
+        .modal-active {
+            animation: cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards scaleUp;
+        }
+        @keyframes scaleUp {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans antialiased min-h-screen flex flex-col">
+
+    <header class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <span class="text-3xl">🍳</span>
+                <h1 class="text-2xl font-black tracking-tight text-orange-600">Recetario<span class="text-gray-700">Rosarino</span></h1>
+            </div>
+            
+            <div class="w-full sm:w-80 relative">
+                <input type="text" id="buscador" placeholder="¿Qué tenés en la heladera?..." class="w-full px-4 py-2 bg-gray-100 border border-transparent rounded-xl focus:outline-none focus:bg-white focus:border-orange-500 transition-all text-sm">
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-8 flex-grow w-full">
+        
+        <section class="text-center mb-12">
+            <h2 class="text-3xl sm:text-4xl font-extrabold text-gray-900 mb-3">Recetas sencilla para todo</h2>
+            <p class="text-gray-600 max-w-xl mx-auto text-base sm:text-lg">Menús ricos, simples y variados.</p>
+        </section>
+
+        <div class="flex flex-wrap justify-center gap-3 mb-10" id="contenedor-filtros">
+            <button onclick="filtrarCategoria('todas')" id="btn-todas" class="filter-btn px-5 py-2.5 rounded-full bg-orange-600 text-white font-semibold text-sm shadow-md shadow-orange-200 transition-all">Todo</button>
+            <button onclick="filtrarCategoria('merienda')" id="btn-merienda" class="filter-btn px-5 py-2.5 rounded-full bg-white text-gray-600 hover:bg-gray-100 font-semibold text-sm transition-all border border-gray-200">🥐 Merienda / Panadería</button>
+            <button onclick="filtrarCategoria('almuerzo')" id="btn-almuerzo" class="filter-btn px-5 py-2.5 rounded-full bg-white text-gray-600 hover:bg-gray-100 font-semibold text-sm transition-all border border-gray-200">🍗 Almuerzos</button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" id="cuadrilla-recetas"></div>
+    </main>
+
+    <div id="modal-receta" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300">
+        <div class="bg-white rounded-3xl max-w-2xl w-full max-h-[85vh] overflow-y-auto shadow-2xl p-6 sm:p-8 relative modal-active">
+            
+            <button onclick="cerrarReceta()" class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-gray-200 rounded-full text-gray-700 font-bold transition-colors text-lg">✕</button>
+            
+            <div id="contenido-modal"></div>
+        </div>
+    </div>
+
+    <script>
+        // Nuestra base de datos de recetas (Materia prima)
+        const recetas = [
+            {
+                id: 1,
+                titulo: "Pan 100% integral",
+                descripcion: "Olvidate de que te quede como un garrote. Un pan casero que rinde un montón, súper tierno y se amasa en 5 minutos.",
+                emoji: "🍞",
+                tiempo: "45 min",
+                categoria: "merienda",
+                tags: ["Económico", "4 Ingredientes"],
+                ingredientes: [
+                    "500g de Harina integral",
+                    "350ml de Agua tibia",
+                    "1 sobre de Levadura seca (10g) o 25g de fresca",
+                    "1 cucharadita de Sal",
+                    "1 cucharada de Aceite (opcional)"
+                ],
+                pasos: [
+                    "En un bol grande, mezclá la harina integral con la sal.",
+                    "Disolvé la levadura in la agua tibia y agregala al bol junto con el aceite.",
+                    "Integrá todo con una cuchara hasta formar una masa (no hace falta matarse amasando, solo que no quede harina suelta).",
+                    "Tapá el bol y dejalo descansar 20 minutos en un lugar calentito hasta que duplique su tamaño.",
+                    "Pasalo a un molde aceitado, mandalo al horno medio (180°C) por unos 35 a 40 minutos... ¡Y listo, tenés pan para toda la semana!"
+                ]
+            },
+            {
+                id: 2,
+                titulo: "Budín de Limón con Aceite",
+                descripcion: "Húmedo, esponjoso y baratísimo. Reemplazamos la manteca por aceite para que lo hagas hoy mismo con lo que hay en el mueble.",
+                emoji: "🍋",
+                tiempo: "30 min",
+                categoria: "merienda",
+                tags: ["Sin Manteca", "Express"],
+                ingredientes: [
+                    "2 tazas de Harina leudante (o común + polvo de hornear)",
+                    "1 taza de Azúcar",
+                    "1/2 taza de Aceite neutro (girasol o maíz)",
+                    "2 Huevos",
+                    "Jugo y ralladura de 1 Limón grande",
+                    "1/2 taza de Agua o Leche"
+                ],
+                pasos: [
+                    "Batí los huevos con el azúcar en un bol hasta que queden espumosos.",
+                    "Agregá el aceite, el jugo y la ralladura de limón, y mezclá bien.",
+                    "Andá sumando la harina intercalando con el agua o la leche, batiendo despacio para que no queden grumos.",
+                    "Volcá todo en una budinera enharinada y aceitada.",
+                    "Horneá a fuego medio por 30-35 minutos. Clavale un cuchillo: si sale limpio, sacalo y poné la pava."
+                ]
+            },
+            {
+                id: 5,
+                titulo: "Panqueques de Avena Express",
+                descripcion: "Súper esponjosos, saludables y se hacen en 5 minutos metiendo todo en la licuadora. Ideales para arrancar el día con energía.",
+                emoji: "🥞",
+                tiempo: "10 min",
+                categoria: "merienda",
+                tags: ["Saludable", "Express"],
+                ingredientes: [
+                    "1 taza de Avena (tradicional o instantánea)",
+                    "2 Huevos",
+                    "1/2 taza de Leche (o agua si no tenés)",
+                    "1 banana madura (le da el dulzor justo)",
+                    "1 cucharadita de Esencia de vainilla o canela (opcional)"
+                ],
+                pasos: [
+                    "Meté todos los ingredientes adentro de la licuadora o usá un mixer (avena, huevos, leche, la banana cortada en pedazos y la vainilla).",
+                    "Licuá todo a fondo por 1 o 2 minutos hasta que te quede una cremita espesa y sin grumos. Si no tenés licuadora, pisá bien la banana con un tenedor y batí todo a mano.",
+                    "Calentá una sartén a fuego medio con un chorrito mínimo de aceite o un pedacito de manteca para que no se peguen.",
+                    "Echá un cucharón de la mezcla en el centro de la sartén (se van a formar solitos en forma redonda).",
+                    "Cuando veas que le salen burbujitas en la superficie (tarda unos 2 minutos), dalo vuelta con una espátula. Dejalo 1 minuto más del otro lado y sacalo. Mandale miel, dulce de leche o comelos así solos con el mate."
+                ]
+            },
+            {
+                id: 6,
+                titulo: "Tacos de Pollo Desmenuzado",
+                descripcion: "Un clásico espectacular y rendidor. Pollo súper tierno cocinado con vegetales salteados y el toque justo de salsa de soja.",
+                emoji: "🌮",
+                tiempo: "35 min",
+                categoria: "almuerzo",
+                tags: ["Alto en Proteínas", "Para Compartir"],
+                ingredientes: [
+                    "2 Pechugas de pollo",
+                    "3 Cebollas medianas",
+                    "1 Pimiento (rojo, verde o amarillo)",
+                    "Salsa de soja a gusto",
+                    "1 paquete de Tortillas o rapiditas",
+                    "Para el caldo: Sal, granos de pimienta y hojas de laurel (opcional)",
+                    "Condimentos a gusto: Sal, pimienta molida y ají molido"
+                ],
+                pasos: [
+                    "Herví las pechugas en una olla con abundante agua bien condimentada con sal, granos de pimienta y laurel. Cocinalas hasta que se sientan bien tiernas y se puedan desmenuzar fácil.",
+                    "Mientras se hace el pollo, cortá las cebollas y el pimiento en tiras delgadas. Saltealos en una sartén con un chorrito de aceite y una pizca de sal, cocinando hasta que la cebolla quede transparente. Retirá un momento del fuego.",
+                    "Sacá el pollo de la olla y, con la ayuda de dos tenedores, desmenuzalo por completo siguiendo la fibra de la carne.",
+                    "Agregá todo el pollo desmenuzado a la sartén con los vegetales y volvela al fuego. Mezclá bien para integrar todos los sabores.",
+                    "Sumá la salsa de soja y los condimentos a gusto (ají molido, pimienta y rectificá de sal si hace falta). Cociná un par de minutos más para que el pollo absorba todo el jugo y ya está listo para armar tus tacos en unas rapiditas calientes."
+                ]
+            }
+        ];
+
+        let categoriaActual = "todas";
+
+        // Función para renderizar las tarjetas en la pantalla principal
+        function renderizarRecetas(lista) {
+            const cuadrilla = document.getElementById("cuadrilla-recetas");
+            cuadrilla.innerHTML = "";
+
+            if (lista.length === 0) {
+                cuadrilla.innerHTML = `<p class="col-span-full text-center text-gray-500 py-12">No encontramos recetas con ese ingrediente... ¡Probá con otra cosa!</p>`;
+                return;
+            }
+
+            lista.forEach(receta => {
+                const tagsHtml = receta.tags.map(tag => {
+                    let colorClass = "bg-orange-50 text-orange-700";
+                    if (tag === "Económico" || tag === "Cero Desperdicio" || tag === "Alto en Proteínas") colorClass = "bg-green-50 text-green-700";
+                    return `<span class="px-2.5 py-1 text-xs font-bold ${colorClass} rounded-lg">${tag}</span>`;
+                }).join('');
+
+                const card = document.createElement("div");
+                card.className = "bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl border border-gray-100 transition-all duration-300 flex flex-col group cursor-pointer";
+                card.onclick = () => abrirReceta(receta.id);
+                card.innerHTML = `
+                    <div class="h-48 flex items-center justify-center text-5xl group-hover:scale-105 transition-transform duration-300 select-none bg-gray-50">
+                        ${receta.emoji}
+                    </div>
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="flex flex-wrap gap-2 mb-3">${tagsHtml}</div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-2 group-hover:text-orange-600 transition-colors">${receta.titulo}</h3>
+                        <p class="text-gray-600 text-sm line-clamp-2 flex-grow">${receta.descripcion}</p>
+                        <div class="flex items-center justify-between border-t border-gray-50 pt-4 mt-4 text-xs font-semibold text-gray-500">
+                            <span>⏱️ ${receta.tiempo}</span>
+                            <span class="text-orange-500 font-bold text-sm">Ver Receta →</span>
+                        </div>
+                    </div>
+                `;
+                cuadrilla.appendChild(card);
+            });
+        }
+
+        // Lógica para abrir el Modal y rellenar la receta limpia
+        function abrirReceta(id) {
+            const receta = recetas.find(r => r.id === id);
+            if (!receta) return;
+
+            const contenedorModal = document.getElementById("contenido-modal");
+            
+            const ingredientesHtml = receta.ingredientes.map(ing => `
+                <label class="flex items-start gap-3 p-2 hover:bg-gray-50 rounded-xl cursor-pointer transition-colors">
+                    <input type="checkbox" class="mt-1 accent-orange-500 rounded border-gray-300 focus:ring-orange-500 h-4 w-4">
+                    <span class="text-gray-700 text-sm sm:text-base">${ing}</span>
+                </label>
+            `).join('');
+
+            const pasosHtml = receta.pasos.map((paso, index) => `
+                <div class="flex gap-4">
+                    <div class="flex-shrink-0 w-7 h-7 bg-orange-100 text-orange-700 font-bold text-sm flex items-center justify-center rounded-full mt-0.5">
+                        ${index + 1}
+                    </div>
+                    <p class="text-gray-600 text-sm sm:text-base leading-relaxed">${paso}</p>
+                </div>
+            `).join('');
+
+            contenedorModal.innerHTML = `
+                <div class="flex items-center gap-3 mb-4 mt-2">
+                    <span class="text-4xl">${receta.emoji}</span>
+                    <h3 class="text-2xl font-black text-gray-900">${receta.titulo}</h3>
+                </div>
+                <p class="text-gray-500 text-sm mb-6">${receta.descripcion}</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-8">
+                    <div class="md:col-span-2">
+                        <h4 class="font-bold text-gray-900 mb-3 text-lg flex items-center gap-2">📋 Ingredientes <span class="text-xs text-gray-400 font-normal">(Tachá los que tenés)</span></h4>
+                        <div class="flex flex-col gap-1 bg-gray-50 p-3 rounded-2xl">${ingredientesHtml}</div>
+                    </div>
+                    <div class="md:col-span-3">
+                        <h4 class="font-bold text-gray-900 mb-3 text-lg">👨‍🍳 Preparación</h4>
+                        <div class="flex flex-col gap-5">${pasosHtml}</div>
+                    </div>
+                </div>
+            `;
+
+            const modal = document.getElementById("modal-receta");
+            modal.classList.remove("opacity-0", "pointer-events-none");
+            document.body.style.overflow = "hidden"; // Traba el scroll del fondo
+        }
+
+        // Función para cerrar la receta flotante
+        function cerrarReceta() {
+            const modal = document.getElementById("modal-receta");
+            modal.classList.add("opacity-0", "pointer-events-none");
+            document.body.style.overflow = "auto"; // Libera el scroll
+        }
+
+        // DETALLES PRO: Cerrar al hacer clic en el fondo oscuro
+        document.getElementById("modal-receta").addEventListener("click", function(evento) {
+            if (evento.target === this) {
+                cerrarReceta();
+            }
+        });
+
+        // DETALLES PRO: Cerrar al apretar la tecla "ESC"
+        document.addEventListener("keydown", function(evento) {
+            if (evento.key === "Escape") {
+                cerrarReceta();
+            }
+        });
+
+        // Filtros fluidos por categoría
+        function filtrarCategoria(cat) {
+            categoriaActual = cat;
+            
+            document.querySelectorAll(".filter-btn").forEach(btn => {
+                btn.className = "filter-btn px-5 py-2.5 rounded-full bg-white text-gray-600 hover:bg-gray-100 font-semibold text-sm transition-all border border-gray-200";
+            });
+            const btnActivo = document.getElementById(`btn-${cat}`);
+            btnActivo.className = "filter-btn px-5 py-2.5 rounded-full bg-orange-600 text-white font-semibold text-sm shadow-md shadow-orange-200 transition-all";
+
+            ejecutarFiltros();
+        }
+
+        // Lógica del buscador predictivo en tiempo real
+        document.getElementById("buscador").addEventListener("input", ejecutarFiltros);
+
+        function ejecutarFiltros() {
+            const textoBusqueda = document.getElementById("buscador").value.toLowerCase().trim();
+            
+            let recetasFiltradas = recetas;
+
+            if (categoriaActual !== "todas") {
+                recetasFiltradas = recetasFiltradas.filter(r => r.categoria === categoriaActual);
+            }
+
+            if (textoBusqueda !== "") {
+                recetasFiltradas = recetasFiltradas.filter(r => 
+                    r.titulo.toLowerCase().includes(textoBusqueda) ||
+                    r.descripcion.toLowerCase().includes(textoBusqueda) ||
+                    r.ingredientes.some(ing => ing.toLowerCase().includes(textoBusqueda))
+                );
+            }
+
+            renderizarRecetas(recetasFiltradas);
+        }
+
+        // Arrancar la web mostrando todo al principio
+        renderizarRecetas(recetas);
+    </script>
+</body>
+</html>
