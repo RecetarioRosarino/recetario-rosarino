@@ -44,13 +44,6 @@
             <button onclick="filtrarCategoria('almuerzo')" id="btn-almuerzo" class="filter-btn px-5 py-2.5 rounded-full bg-white text-gray-600 hover:bg-gray-100 font-semibold text-sm transition-all border border-gray-200">🍗 Almuerzos</button>
         </div>
 
-        <div class="max-w-3xl mx-auto mb-12 p-4 bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col items-center justify-center min-h-[100px]">
-            <span class="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-2 block w-full text-left px-2 select-none">Publicidad Recomendada</span>
-            
-            <script async="async" data-cfasync="false" src="https://pl29707269.effectivecpmnetwork.com/c2e72d687ebe1c7d8b760bcebf8128a9/invoke.js"></script>
-            <div id="container-c2e72d687ebe1c7d8b760bcebf8128a9" class="w-full flex justify-center"></div>
-        </div>
-
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8" id="cuadrilla-recetas"></div>
     </main>
 
@@ -183,7 +176,7 @@
                     "En otro bol grande, batí los huevos con el azúcar. Agregá el aceite, la esencia de vainilla y sumá el puré de banana integrando todo muy bien.",
                     "Incorporá la harina tamizada de a poco, mezclando suavemente con movimientos envolventes hasta formar una preparación uniforme.",
                     "Si elegiste usar chips de chocolate o nueces, pasalas antes por una pizca de harina (para que no se vayan al fondo) y sumalas a la mezcla.",
-                    "Volcá en una budinera previamente aceitada y enharinada. Horneá a fuego medio (180°C) durante 35-40 minutos hasta que al pincharlo salga seco."
+                    "Volcá en una budinera previamente aceitada and enharinada. Horneá a fuego medio (180°C) durante 35-40 minutos hasta que al pincharlo salga seco."
                 ]
             },
             {
@@ -253,7 +246,7 @@
                     "1 cucharadita de Esencia de vainilla"
                 ],
                 pasos: [
-                    "Poné la media taza de azúcar en el molde de torta redondo que vas a usar (lo ideal es uno de 24 cm) y llevalo directo a fuego mínimo para hacer el caramelo. Movelo despacio hasta que esté dorado, cubriendo bien el fondo y los bordes. Dejá enfriar.",
+                    "Poné la media taza de azúcar en el molde de torta redondo que vas a usar (lo ideal es uno de 24 cm) si lo llevás directo a fuego mínimo para hacer el caramelo. Movelo despacio hasta que esté dorado, cubriendo bien el fondo y los bordes. Dejá enfriar.",
                     "Pelá las manzanas, sacales el centro y cortalas en gajos medianos. Acomodá los gajos sobre el caramelo seco haciendo una decoración linda en espiral.",
                     "Para la masa, batí los huevos con la taza de azúcar hasta que aclare. Agregá el aceite (o manteca derretida), la esencia de vainilla y mezclá.",
                     "Andá incorporando la harina leudante intercalada con la leche, mezclando con suavidad hasta lograr una masa fluida y sin grumos.",
@@ -275,7 +268,7 @@
             }
 
             lista.forEach(receta => {
-                const tagsHtml = metaTags = receta.tags.map(tag => {
+                const tagsHtml = receta.tags.map(tag => {
                     let colorClass = "bg-orange-50 text-orange-700";
                     if (tag === "Económico" || tag === "Cero Desperdicio" || tag === "Alto en Proteínas" || tag === "Húmedo" || tag === "Ultra Express") colorClass = "bg-green-50 text-green-700";
                     return `<span class="px-2.5 py-1 text-xs font-bold ${colorClass} rounded-lg">${tag}</span>`;
@@ -304,7 +297,7 @@
 
         // Lógica para abrir el Modal y rellenar la receta limpia
         function abrirReceta(id) {
-            const receta = recetas.find(r => r.id === id);
+            const receta = recipes = recetas.find(r => r.id === id);
             if (!receta) return;
 
             const contenedorModal = document.getElementById("contenido-modal");
